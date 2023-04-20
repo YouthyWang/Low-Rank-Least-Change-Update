@@ -25,7 +25,7 @@ elseif (explChosen == 3)
     size = input('Problem size (default 10): ');
     if isempty(size), size = 10; end
     x0 = zeros(size,1);
-    Q = 100; % useless
+    Q = 1e2;
     en = 3;
 else
     size = input('Problem size (default 100): ');

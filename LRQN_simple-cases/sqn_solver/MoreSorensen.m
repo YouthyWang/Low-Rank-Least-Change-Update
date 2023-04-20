@@ -3,7 +3,7 @@
 % by More and Sorensen in 1983.)
 
 function vstar = MoreSorensen(A, beta, delta)
-% Function TrRgnSp tries to find a numerical solution to trust region subprobelm
+% Function MoreSorensen tries to find a numerical solution to trust region subprobelm
 % Input
 %   A:    matrix of the 2nd order term of trust-region target function
 %   beta: vector of the 1st order term of trust-region target function
@@ -12,20 +12,23 @@ function vstar = MoreSorensen(A, beta, delta)
 %   vstar:  estimated optimal variable v* in the trust region algorithm 
 % Ref
 %   Computing a Trustregion Step, 1983, by J.J.More & D.C.Sorensen
+%
+% Main author: Youthy WANG(CUHKSz);
+%              youthywyz@gmail.com (oversea); wangyuzh@126.com (China)
+%              https://youthywang.github.io/
 
-    lambda = 10;
+    lambda = 1;
     m = length(beta);
     Im = eye(m);
     iter = 0;
-    maxIter = 10;
-    % Initial Values
-    lambdas = -A(1,1);
-    for i = 1:m
-        if -A(i,i) > lambdas
-            lambdas = -A(i,i);
-        end
+    maxIter = 1e2;
+    lambda1 = eigs(A,1,'smallestabs','Tolerance',1e-10);
+    if (abs(lambda1) >= 1e-5)
+        A = A - lambda1*Im; % need to add back \lambda_s
     end
-    lambdal = max(0, max(lambdas, norm(beta)/delta-norm(A,1)));
+    % Initial Values
+    lambdas = -min(diag(A));
+    lambdal = max([0,lambdas,norm(beta)/delta-norm(A,1)]);
     lambdau = norm(beta)/delta+norm(A,1);
     
     while true
@@ -33,14 +36,15 @@ function vstar = MoreSorensen(A, beta, delta)
         lambda = max(lambda,lambdal);
         lambda = min(lambda,lambdau);
         if lambda <= lambdas
-            lambda = max(1e-3*lambdau, (lambdal*lambdau)^(1/2));
+            lambda = max(1e-3*lambdau, sqrt(lambdal*lambdau));
         end
         [~,f] = chol(A+lambda*Im);
         
         % Step 2: positive definite case
         if (f == 0)
             R = chol(A+lambda*Im);
-            p = -(R'*R)^-1*beta;
+            q = -(R')^(-1)*beta;
+            p = (R)^(-1)*q;
         end
         
         % Step 3: Updating bounds
@@ -54,14 +58,14 @@ function vstar = MoreSorensen(A, beta, delta)
         if (f==0) && (xi(lambda,A,beta,delta)<0)
             [z,~] = LINPACKtech(R,p,delta);
             lambdas = max(lambdas,lambda-norm(R*z)^2);
-        elseif (f ~= 0)
+        elseif (f > 0)
             [d,u] = UpdateLambdas(A,lambda);
             lambdas = max(lambdas, lambda+d/norm(u)^2);
         end
         lambdal = max(lambdal, lambdas);
         
         % Step 4: check tolerance (convergence)
-        if (abs(lambdau-lambdal)<1e-5) || (iter>maxIter)
+        if (abs(xi(lambda,A,beta,delta))<1e-5) || (iter>maxIter)
             break;
         end
         % Step 5: updating lambda
@@ -74,7 +78,6 @@ function vstar = MoreSorensen(A, beta, delta)
         iter = iter + 1;
     end
     vstar = -(A+lambda*Im)^-1*beta;
-
 
 end
 

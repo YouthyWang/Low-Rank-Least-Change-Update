@@ -1,4 +1,25 @@
+%% Function: Ye 
+% (Newton's method for quadratic minimization with spherical constraint, proposed
+% by Ye in 1992.)
+
 function v = Ye(A, b, bdd)
+% Function Ye tries to find a numerical solution to quadratic minimization 
+% with spherical constraint
+% Input
+%   A:    matrix of the 2nd order term of trust-region target function
+%   beta: vector of the 1st order term of trust-region target function
+%   delta:trust-region bound
+% Output
+%   vstar:  estimated optimal variable v* in the trust region algorithm 
+% Ref
+% A new complexity result minimization of a quadratic function 
+% with a sphere constraint, 1992, by Y.Ye
+
+% Author: Youthy WANG(CUHKSz);
+%         youthywyz@gmail.com (oversea); wangyuzh@126.com (China)
+%         https://youthywang.github.io/
+%
+
     % Step I: Scaling and Shifting
     c = -b./bdd; % need to transform back: v = bdd*x
     lambdas = eigs(A,1,'smallestabs','Tolerance',1e-10);

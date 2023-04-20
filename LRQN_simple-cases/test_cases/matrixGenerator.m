@@ -5,7 +5,7 @@ A = sprandn(n,n,0.1,1e-3); % generate a random n x n matrix
 
 % % construct a symmetric matrix using either
 % A = rand(n);
-A = eye(n)+A*A';
+A = 1e-2*eye(n)+A*A';
 % % The first is significantly faster: O(n^2) compared to O(n^3)
 % 
 % % since A(i,j) < 1 by construction and a symmetric diagonally dominant matrix
